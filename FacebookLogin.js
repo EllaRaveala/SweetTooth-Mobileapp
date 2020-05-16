@@ -5,15 +5,21 @@ import {
     View,
     Image,
     TouchableOpacity,
-    ActivityIndicator,
     ImageBackground,
     Button
 } from 'react-native';
-import { Container, Header, Content, List, ListItem, Separator, Footer } from 'native-base';
+import {
+    Container,
+    Footer,
+    FooterTab
+} from 'native-base';
 import * as Facebook from 'expo-facebook';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import FrontPage from './FrontPage';
+import Recipes from './Recipes';
+import Details from './Details';
+import Welcome from './Welcome';
+import Favourites from './Favourites';
 
 //console.disableYellowBox = true;
 
@@ -30,7 +36,6 @@ export default function FacebookLogin() {
 
     facebookLogIn = async() => {
         try {
-
             await Facebook.initializeAsync('1146170379049255');
             const {type, token, expires, permissions, declinedPermissions} = await Facebook.logInWithReadPermissionsAsync('1146170379049255', {permissions: ['public_profile']});
             if (type === 'success') {
@@ -58,47 +63,31 @@ export default function FacebookLogin() {
 
     return (isLoggedin
         ? userData
-            ? <Container>
-                <Header>
-                     <NavigationContainer>
-                        <Stack.Navigator>
-                            <Stack.Screen name="Home" component={FrontPage}/>
-                        </Stack.Navigator>
-                    </NavigationContainer>
-                    </Header>
-                    <Content>
-                    <Image
-                        style={{
-                        width: 100,
-                        height: 100,
-                        borderRadius: 0
-                    }}
-                        source={{
-                        uri: userData.picture.data.url
-                    }}
-                        onLoadEnd={() => setImageLoadStatus(true)}/>
-                    <ActivityIndicator
-                        size="large"
-                        color="#0000ff"
-                        animating={!isImageLoading}
-                        style={{
-                        position: "absolute"
-                    }}/>
-                    <Text
-                        style={{
-                        fontSize: 22,
-                        marginVertical: 10
-                    }}>Hi {userData.name}!</Text>
-                    </Content>
-                    <Footer>
-                    <TouchableOpacity style={styles.logoutBtn} onPress={this.logout}>
-                        <Text
-                            style={{
-                            color: "#fff"
-                        }}>Logout</Text>
-                    </TouchableOpacity>
-                    </Footer>
-                </Container>
+            ? <Container><NavigationContainer>
+                    <Stack.Navigator initialRouteName="Welcome">
+                        <Stack.Screen
+                            name="Welcome"
+                            initialParams={{
+                            uData: userData,
+                            loggedin: isLoggedin,
+                        }}
+                            component={Welcome}/>
+                        <Stack.Screen name="Recipes" component={Recipes}/>
+                        <Stack.Screen name="Details" component={Details}/>
+                        <Stack.Screen name="Favourites" component={Favourites}/>
+                    </Stack.Navigator>
+                </NavigationContainer>
+                <Footer>
+                    <FooterTab style={{backgroundColor:"#FFF", justifyContent:"center"}}>
+                <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+                <Text
+                    style={{
+                    color: "#fff"
+                }}>Logout</Text        >
+            </TouchableOpacity>
+            </FooterTab>
+            </Footer>
+            </Container>
             : null
         : <View style={styles.container}>
             <ImageBackground source={require("./images/donuts.jpg")} style={styles.image}>
