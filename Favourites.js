@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {StyleSheet, FlatList} from 'react-native';
 import {
     Container,
-    Content,
     Text,
     Card,
     CardItem,
@@ -13,77 +12,54 @@ import {
 } from 'native-base';
 import * as SQLite from 'expo-sqlite';
 
-export default function Favourites({route, navigation}) {
+export default function Favourites({navigation}) {
 
-    //const db = SQLite.openDatabase('favdb.db');
-
-    const {data} = route.params;
+    const db = SQLite.openDatabase('favouriteRecipesdb.db');
 
     const [favourites,
         setFavourites] = useState([]);
-    /*const [name,
-        setName] = useState('');
-    const [image,
-        setImage] = useState('');
-    const [duration,
-        setDuration] = useState('');
-    const [description,
-        setDescription] = useState('');
-    const [likes,
-        setLikes] = useState(0);
 
+    //calls updateList function
     useEffect(() => {
-        db.transaction(tx => {
-            tx.executeSql('create table if not exists favs (id integer primary key not null, name text,' +
-                    ' image text, duration text, description text, likes int);');
-        }, null, updateList);
+        updateList();
     }, []);
 
-    const saveItem = () => {
-        db.transaction(tx => {
-            tx.executeSql('insert into favs (name, image, duration, description, likes) values (?, ?, ?' +
-                    ', ?, ?);',
-            [name, image, duration, description, likes]);
-        }, null, updateList)
-    }
-
+    //sets recipes to favourites -array
     const updateList = () => {
         db.transaction(tx => {
-            tx.executeSql('select * from favs;', [], (_, {rows}) => setFavourites(rows._array));
+            tx.executeSql('select * from favouriteRecipes;', [], (_, {rows}) => setFavourites(rows._array));
         });
     }
-
+    //deletes favourite recipe from database by id
     const deleteItem = (id) => {
         db.transaction(tx => {
-            tx.executeSql(`delete from aa where id = ?;`, [id]);
+            tx.executeSql(`delete from favouriteRecipes where id = ?;`, [id]);
         }, null, updateList)
-    }*/
+    }
 
+    //returns flatlist of card items with favourite recipes
     return (
-        <Container>
-            <FlatList 
-                    data={data}
-                    keyExtractor={item => item
-                    .id
-                    .toString()}
-                    renderItem={({item}) => <Card>
-                    <CardItem
-                        header
-                        button
-                        onPress={() => navigation.navigate('Details')}>
-                        <Left>
-                        <Thumbnail source={require('./images/donuts.jpg')} />
-                        </Left>
-                        <Text>{item.name}</Text>
-                        <Right>
-                            <Text>Details</Text>
-                            <Icon name="arrow-forward"/>
-                        </Right>
-                    </CardItem>
-                    <CardItem footer button onPress={() => deleteItem(item.id)}>
-                        <Text>Delete</Text>
-                    </CardItem>
-                </Card>}/>
+        <Container style={styles.container}>
+            <FlatList
+                data={favourites}
+                keyExtractor={item => item
+                .id
+                .toString()}
+                renderItem={({item}) => <Card>
+                <CardItem header button onPress={() => navigation.navigate('Details')}>
+                    <Left>
+                        <Thumbnail source={require('./images/donuts.jpg')}/>
+                    </Left>
+                    <Text>{item.name}</Text>
+                    <Right>
+                        <Text>Details</Text>
+                        <Icon name="arrow-forward"/>
+                    </Right>
+                </CardItem>
+                <CardItem footer button onPress={() => deleteItem(item.id)}>
+                    <Text>Delete</Text>
+                </CardItem>
+            </Card>}/>
         </Container>
 
     );
@@ -91,18 +67,6 @@ export default function Favourites({route, navigation}) {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: '30%'
     },
-    buttons: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around'
-    },
-    listItem: {
-        width: '50%'
-    }
 });

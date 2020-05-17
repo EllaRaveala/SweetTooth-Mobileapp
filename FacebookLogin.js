@@ -3,10 +3,8 @@ import {
     StyleSheet,
     Text,
     View,
-    Image,
     TouchableOpacity,
     ImageBackground,
-    Button
 } from 'react-native';
 import {
     Container,
@@ -34,6 +32,7 @@ export default function FacebookLogin() {
     const [isImageLoading,
         setImageLoadStatus] = useState(false);
 
+    //facebook log in API
     facebookLogIn = async() => {
         try {
             await Facebook.initializeAsync('1146170379049255');
@@ -47,9 +46,7 @@ export default function FacebookLogin() {
                         setUserData(data);
                     })
                     .catch(e => console.log(e))
-            } else {
-                // type === 'cancel'
-            }
+            } 
         } catch ({message}) {
             alert(`Facebook Login Error: ${message}`);
         }
@@ -61,6 +58,9 @@ export default function FacebookLogin() {
         setImageLoadStatus(false);
     }
 
+    //returns front page when user is not logged in
+    //if user is logged in, returns Welcome page
+    //stack navigator used 
     return (isLoggedin
         ? userData
             ? <Container><NavigationContainer>
@@ -83,7 +83,7 @@ export default function FacebookLogin() {
                 <Text
                     style={{
                     color: "#fff"
-                }}>Logout</Text        >
+                }}>Logout</Text>
             </TouchableOpacity>
             </FooterTab>
             </Footer>

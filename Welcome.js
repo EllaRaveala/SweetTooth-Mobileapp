@@ -1,24 +1,24 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, Image, ActivityIndicator, Button} from 'react-native';
-import {Container, Content} from 'native-base';
+import {Container} from 'native-base';
 
 export default function Welcome({route, navigation}) {
 
+    //user data from FacebookLogin -component
     const {uData} = route.params;
-    //const {iLoading}=route.params;
 
-    const [userData,
-        setUserData] = useState(uData);
     const [isImageLoading,
         setImageLoadStatus] = useState(false);
 
+    // returns facebook profile photo and facebook user name navigation button to
+    // Recipes page
     return (
         <Container style={styles.container}>
             <Text
                 style={{
                 fontSize: 22,
                 marginVertical: 10
-            }}>Hi {userData.name}!</Text>
+            }}>Hi {uData.name}!</Text>
             <Image
                 style={{
                 width: 100,
@@ -27,7 +27,7 @@ export default function Welcome({route, navigation}) {
                 marginBottom: 20
             }}
                 source={{
-                uri: userData.picture.data.url
+                uri: uData.picture.data.url
             }}
                 onLoadEnd={() => setImageLoadStatus(true)}/>
             <ActivityIndicator
@@ -37,13 +37,8 @@ export default function Welcome({route, navigation}) {
                 style={{
                 position: "absolute"
             }}/>
-            <Text
-                style={styles.navButton}
-                onPress={() => navigation.navigate('Recipes')}>
+            <Text style={styles.navButton} onPress={() => navigation.navigate('Recipes')}>
                 Go to Recipes
-            </Text>
-            <Text style={styles.navButton} onPress= { () => navigation.navigate('Favourites') }>
-                Go to My favourites
             </Text>
         </Container>
     );

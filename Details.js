@@ -1,22 +1,13 @@
 import React, {useState, useEffect} from 'react';
-import {
-    StyleSheet,
-    Image,
-    Text,
-    Alert,
-    FlatList,
-    TextInput
-} from 'react-native';
+import {StyleSheet, Image, Text, Alert, TextInput} from 'react-native';
 import {
     Container,
-    Header,
     Content,
     Icon,
     Right,
     Card,
     CardItem,
     Left,
-    Thumbnail,
     Body,
     Button
 } from 'native-base';
@@ -24,83 +15,48 @@ import * as SQLite from 'expo-sqlite';
 
 export default function Details({route, navigation}) {
 
-    const db = SQLite.openDatabase('favdb.db');
+    const db = SQLite.openDatabase('favouriteRecipesdb.db');
 
-    //Variables for imported params
+    //Import params from Recipes - component
     const {data} = route.params;
-
+    //set params to variables
     const name = data.name;
     const image = data.image;
     const duration = data.duration;
-    const description = data.description;
+    const ingredients = data.ingredients;
     const likes = data.likes;
-
-    //New array where favourites are saved
-    const [favourites,
-        setFavourites] = useState([]);
-
-    //Variables for converting amounts
-    const [ingredientName,
-        setIngredientName] = useState('');
-    const [targetUnit,
-        setTargetUnit] = useState('');
-    const [sourceUnit,
-        setSourceUnit] = useState('');
-    const [sourceAmount,
-        setSourceAmount] = useState('');
-    const [answer,
-        setAnswer] = useState('');
-
+    
+    //Creates database table favouriteRecipes if not exist
     useEffect(() => {
         db.transaction(tx => {
-            tx.executeSql('create table if not exists fav (id integer primary key not null, name text, imag' +
-                    'e text, duration text, description text, likes int);');
-        }, null, updateList);
+            tx.executeSql('create table if not exists favouriteRecipes (id integer primary key not null, na' +
+                    'me text, image text, duration text, ingredients text, likes int);');
+        }, null);
     }, []);
 
+    //Saves new recipe to favouriteRecipes table
     const saveItem = () => {
         db.transaction(tx => {
-            tx.executeSql('insert into fav (name, image, duration, description, likes) values (?, ?, ?, ?, ' +
-                    '?);',
-            [name, image, duration, description, likes]);
-        }, null, updateList)
+            tx.executeSql('insert into favouriteRecipes (name, image, duration, ingredients, likes) values ' +
+                    '(?, ?, ?, ?, ?);',
+            [name, image, duration, ingredients, likes]);
+        }, null)
     }
 
-    const updateList = () => {
-        db.transaction(tx => {
-            tx.executeSql('select * from fav;', [], (_, {rows}) => setFavourites(rows._array));
-        });
-    }
-
-    const deleteItem = (id) => {
-        db.transaction(tx => {
-            tx.executeSql(`delete from fav where id = ?;`, [id]);
-        }, null, updateList)
-    }
-
-    const convert = () => {
-        fetch("https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/convert?sour" +
-                "ceUnit=cups&sourceAmount=2.5&ingredientName=flour&targetUnit=grams", {
-            method: "GET",
-            headers: {
-                "x-rapidapi-host": "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",
-                "x-rapidapi-key": "8493581f79msh5161cd8f00aee52p14a556jsn3478eac19610"
-            },
-        }).then((response) => response.json()).then((data) => {
-            setAnswer(data.answer);
-        }).catch((error) => {
-            Alert.alert('Error', error);
-        });
-    }
-
+    // returns one card item with all the information in it lets user add the recipe
+    // to favourites
     return (
         <Container style={styles.container}>
             <Text
-                onPress={() => navigation.navigate('Favourites', {data: favourites})}>"Favourites"</Text>
+                style={styles.navButton}
+                onPress={() => navigation.navigate('Favourites')}>Favourites</Text>
             <Card>
                 <CardItem>
                     <Left>
-                        <Text>{name}</Text>
+                        <Text
+                            style={{
+                            fontSize: 20
+                        }}>{name}</Text>
                     </Left>
                     <Body>
                         <Text
@@ -114,23 +70,12 @@ export default function Details({route, navigation}) {
                             + Add to Favourites
                         </Text>
                     </Body>
-                    <Right>
-                        <Text
-                            style={{
-                            color: "#4267b2"
-                        }}
-                            onPress={() => {
-                            deleteItem();
-                            Alert.alert('Recipe Deleted from Favourites!')
-                        }}>
-                            - Delete
-                        </Text>
-                    </Right>
+                    <Right></Right>
                 </CardItem>
                 <CardItem cardBody>
                     <Image
                         source={{
-                        uri: data.image
+                        uri: image
                     }}
                         style={{
                         height: 200,
@@ -143,7 +88,7 @@ export default function Details({route, navigation}) {
                         <Button transparent>
                             <Icon active name="thumbs-up"/>
                             <Text>
-                                {data.likes}</Text>
+                                {likes}</Text>
                         </Button>
                     </Left>
                     <Body>
@@ -153,49 +98,24 @@ export default function Details({route, navigation}) {
                         </Button>
                     </Body>
                     <Right>
-                        <Text>{data.duration}</Text>
+                        <Text>{duration}</Text>
                     </Right>
                 </CardItem>
                 <CardItem>
                     <Body>
+                        <Text
+                            style={{
+                            fontSize: 15,
+                            color: "#4267b2"
+                        }}>
+                            Ingredients
+                        </Text>
                         <Text>
-                            {data.ingredients}
+                            {ingredients}
                         </Text>
                     </Body>
                 </CardItem>
             </Card>
-
-            <Content contentContainerStyle={styles.convertArea}>
-                <Text style={styles.header}>Convert amounts</Text>
-                <TextInput
-                    style={styles.textinput}
-                    foc
-                    placeholder='Ingredient name, i.e flour'
-                    onChangeText={ingredientName => setIngredientName(ingredientName)}
-                    value={ingredientName}/>
-                <TextInput
-                    style={styles.textinput}
-                    placeholder='Target unit i.e, grams'
-                    onChangeText={targetUnit => setTargetUnit(targetUnit)}
-                    value={targetUnit}/>
-                <TextInput
-                    style={styles.textinput}
-                    placeholder='Source unit i.e, cups'
-                    onChangeText={sourceUnit => setSourceUnit(sourceUnit)}
-                    value={sourceUnit}/>
-                <TextInput
-                    style={styles.textinput}
-                    placeholder='Source amount i.e, 2.5'
-                    onChangeText={sourceAmount => setSourceAmount(sourceAmount)}
-                    value={sourceAmount}/>
-                <Text
-                  style={{
-                    padding: 20,
-                    borderWidth: 2,
-                }}
-                    onPress={convert}>Convert</Text>
-                <Text>{answer}</Text>
-            </Content>
         </Container>
     );
 }
@@ -204,22 +124,21 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: '#e9ebee'
     },
-    convertArea: {
-        margin: 20,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    textinput: {
-        width: 300,
-        borderBottomColor: 'gray',
-        borderBottomWidth: 1,
-        margin: 1,
-        paddingVertical: 8
-    },
     header: {
         textAlign: "center",
         marginBottom: 5,
         color: "#4267b2",
         fontSize: 25
+    },
+    navButton: {
+        margin: 10,
+        backgroundColor: 'white',
+        paddingVertical: 7,
+        paddingHorizontal: 10,
+        borderRadius: 0,
+        borderColor: "#4267b2",
+        borderWidth: 2,
+        width: "50%",
+        textAlign: "center"
     }
 });

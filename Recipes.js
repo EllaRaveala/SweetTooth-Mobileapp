@@ -1,10 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, FlatList, TextInput, View, Button, Image} from 'react-native';
+import {StyleSheet, FlatList, TextInput, Button} from 'react-native';
 import {
     Container,
-    Header,
     Content,
-    List,
     Text,
     Card,
     CardItem,
@@ -22,11 +20,6 @@ export default function Recipes({navigation}) {
 
     const db = SQLite.openDatabase('bakingsdb.db');
 
-    /*const {name} = route.params;
-    const {imageURL} = route.params;
-    const {duration} = route.params;
-    const {description} = route.params;*/
-
     const [recipes,
         setRecipes] = useState([]);
     const [name,
@@ -39,10 +32,9 @@ export default function Recipes({navigation}) {
         setIngredients] = useState('');
     const [likes,
         setLikes] = useState(1);
-    
-    const uri = "./images/donuts.jpg";
-
-    useEffect(() => {
+  
+    //Creates new bakings table if not exist, calls updateList and getPermissionAsync(permission to acces gallery) functions
+   useEffect(() => {
         db.transaction(tx => {
             tx.executeSql('create table if not exists bakings (id integer primary key not null, name text,' +
                     ' image text, duration text, ingredients text, likes int);');
@@ -50,6 +42,7 @@ export default function Recipes({navigation}) {
         getPermissionAsync();
     }, []);
 
+    //Saves new recipe into database
     const saveItem = () => {
         db.transaction(tx => {
             tx.executeSql('insert into bakings (name, image, duration, ingredients, likes) values (?, ?, ?' +
@@ -58,18 +51,21 @@ export default function Recipes({navigation}) {
         }, null, updateList)
     }
 
+    //Sets data from database to recipes -array
     const updateList = () => {
         db.transaction(tx => {
             tx.executeSql('select * from bakings;', [], (_, {rows}) => setRecipes(rows._array));
         });
     }
 
+    //Deletes recipe from database by id
     const deleteItem = (id) => {
         db.transaction(tx => {
             tx.executeSql(`delete from bakings where id = ?;`, [id]);
         }, null, updateList)
     }
 
+    //Checks permission to access camera roll
     const getPermissionAsync = async() => {
         if (Constants.platform.ios) {
             const {status} = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -79,6 +75,7 @@ export default function Recipes({navigation}) {
         }
     };
 
+    //Opens phone gallery and sets an image to image - variable
     const pickImage = async() => {
         try {
             let result = await ImagePicker.launchImageLibraryAsync({
@@ -98,6 +95,8 @@ export default function Recipes({navigation}) {
         }
     };
 
+    //returns text inputs for adding a new recipe
+    //returns flatlist of card items with all recipes
     return (
         <Container style={styles.container}>
             <Content>
@@ -131,6 +130,7 @@ export default function Recipes({navigation}) {
                     onPress={saveItem}
                     title="SAVE"/>
                 </Content>
+                
                 <Text style={styles.header}>Find Recipies</Text>
                 <FlatList
                     data={recipes}
@@ -187,5 +187,5 @@ const styles = StyleSheet.create({
         color: "#4267b2",
         margin: 1,
         width: 300
-    }
+    },
 });
