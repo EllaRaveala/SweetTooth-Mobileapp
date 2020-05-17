@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, FlatList, TextInput, Button} from 'react-native';
+import {StyleSheet, FlatList, TextInput, Button, Alert} from 'react-native';
 import {
     Container,
     Content,
@@ -32,12 +32,13 @@ export default function Recipes({navigation}) {
         setIngredients] = useState('');
     const [likes,
         setLikes] = useState(1);
-  
-    //Creates new bakings table if not exist, calls updateList and getPermissionAsync(permission to acces gallery) functions
-   useEffect(() => {
+
+    // Creates new bakings table if not exist, calls updateList and
+    // getPermissionAsync(permission to acces gallery) functions
+    useEffect(() => {
         db.transaction(tx => {
-            tx.executeSql('create table if not exists bakings (id integer primary key not null, name text,' +
-                    ' image text, duration text, ingredients text, likes int);');
+            tx.executeSql('create table if not exists bakings (id integer primary key not null, name text, ' +
+                    'image text, duration text, ingredients text, likes int);');
         }, null, updateList);
         getPermissionAsync();
     }, []);
@@ -45,8 +46,8 @@ export default function Recipes({navigation}) {
     //Saves new recipe into database
     const saveItem = () => {
         db.transaction(tx => {
-            tx.executeSql('insert into bakings (name, image, duration, ingredients, likes) values (?, ?, ?' +
-                    ', ?, ?);',
+            tx.executeSql('insert into bakings (name, image, duration, ingredients, likes) values (?, ?, ?,' +
+                    ' ?, ?);',
             [name, image, duration, ingredients, likes]);
         }, null, updateList)
     }
@@ -58,11 +59,22 @@ export default function Recipes({navigation}) {
         });
     }
 
-    //Deletes recipe from database by id
+    //Creates alert when Delete -is pressed, deletes recipe from database by id
     const deleteItem = (id) => {
-        db.transaction(tx => {
-            tx.executeSql(`delete from bakings where id = ?;`, [id]);
-        }, null, updateList)
+        Alert.alert("Are you sure you want to delete recipe?", "Click Cancel/Yes", [
+            {
+                text: "Cancel",
+                onPress: () => console.log("Cancel Pressed"),
+                style: "cancel"
+            }, {
+                text: "Yes",
+                onPress: () => {
+                    db.transaction(tx => {
+                        tx.executeSql(`delete from bakings where id = ?;`, [id]);
+                    }, null, updateList)
+                }
+            }
+        ], {cancelable: false});
     }
 
     //Checks permission to access camera roll
@@ -95,42 +107,45 @@ export default function Recipes({navigation}) {
         }
     };
 
-    //returns text inputs for adding a new recipe
+    // returns text inputs for adding a new recipe 
     //returns flatlist of card items with all recipes
     return (
         <Container style={styles.container}>
             <Content>
                 <Content contentContainerStyle={styles.addRecipeArea}>
                     <Text style={styles.header}>Share a Recipe</Text>
-                <TextInput
-                    style={styles.textinput}
-                    foc
-                    placeholder='Title, i.e Donuts'
-                    label='Title'
-                    onChangeText={name => setName(name)}
-                    value={name}/>
-                <TextInput
-                    style={styles.textinput}
-                    placeholder='Duration, (i.e "30 min"/"1 hour 30 min")'
-                    label="Duration"
-                    onChangeText={duration => setDuration(duration)}
-                    value={duration}/>
-                <TextInput
-                    style={styles.textinput}
-                    placeholder='Ingredients (separate with comma)'
-                    label="Ingredients"
-                    onChangeText={ingredients => setIngredients(ingredients)}
-                    value={ingredients}/>
-                <Text style={styles.addImagebtn} onPress={pickImage}> + Add Image</Text>
-                <Button
-                    buttonStyle={{
-                    backgroundColor: 'gray',
-                    height: 50
-                }}
-                    onPress={saveItem}
-                    title="SAVE"/>
+                    <TextInput
+                        style={styles.textinput}
+                        foc
+                        placeholder='Title, i.e Donuts'
+                        label='Title'
+                        onChangeText={name => setName(name)}
+                        value={name}/>
+                    <TextInput
+                        style={styles.textinput}
+                        placeholder='Duration, (i.e "30 min"/"1 hour 30 min")'
+                        label="Duration"
+                        onChangeText={duration => setDuration(duration)}
+                        value={duration}/>
+                    <TextInput
+                        style={styles.textinput}
+                        placeholder='Ingredients (separate with comma)'
+                        label="Ingredients"
+                        onChangeText={ingredients => setIngredients(ingredients)}
+                        value={ingredients}/>
+                    <Text style={styles.addImagebtn} onPress={pickImage}>
+                        + Add Image</Text>
+                    <Button
+                        buttonStyle={{
+                        backgroundColor: 'gray',
+                        height: 50
+                    }}
+                        onPress={() => {
+                        saveItem();
+                        Alert.alert('Recipe Added!')}}
+                        title="SAVE"/>
                 </Content>
-                
+
                 <Text style={styles.header}>Find Recipies</Text>
                 <FlatList
                     data={recipes}
@@ -143,7 +158,7 @@ export default function Recipes({navigation}) {
                         button
                         onPress={() => navigation.navigate('Details', {data: item})}>
                         <Left>
-                        <Thumbnail source={require('./images/donuts.jpg')} />
+                            <Thumbnail source={require('./images/donuts.jpg')}/>
                         </Left>
                         <Text>{item.name}</Text>
                         <Right>
@@ -163,7 +178,7 @@ export default function Recipes({navigation}) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#e9ebee',
+        backgroundColor: '#e9ebee'
     },
     addRecipeArea: {
         margin: 20,
@@ -187,5 +202,5 @@ const styles = StyleSheet.create({
         color: "#4267b2",
         margin: 1,
         width: 300
-    },
+    }
 });

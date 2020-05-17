@@ -19,7 +19,7 @@ import Details from './Details';
 import Welcome from './Welcome';
 import Favourites from './Favourites';
 
-//console.disableYellowBox = true;
+console.disableYellowBox = true;
 
 export default function FacebookLogin() {
 
@@ -32,11 +32,11 @@ export default function FacebookLogin() {
     const [isImageLoading,
         setImageLoadStatus] = useState(false);
 
-    //facebook log in API
+    //facebook login API
     facebookLogIn = async() => {
         try {
             await Facebook.initializeAsync('1146170379049255');
-            const {type, token, expires, permissions, declinedPermissions} = await Facebook.logInWithReadPermissionsAsync('1146170379049255', {permissions: ['public_profile']});
+            const {type, token} = await Facebook.logInWithReadPermissionsAsync('1146170379049255', {permissions: ['public_profile']});
             if (type === 'success') {
                 // Get the user's name using Facebook's Graph API
                 fetch(`https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,picture.height(500)`)
@@ -60,7 +60,8 @@ export default function FacebookLogin() {
 
     //returns front page when user is not logged in
     //if user is logged in, returns Welcome page
-    //stack navigator used 
+    //stack navigator for navigating between components
+    //logout button always at the bottom, at each page
     return (isLoggedin
         ? userData
             ? <Container><NavigationContainer>
@@ -77,6 +78,7 @@ export default function FacebookLogin() {
                         <Stack.Screen name="Favourites" component={Favourites}/>
                     </Stack.Navigator>
                 </NavigationContainer>
+
                 <Footer>
                     <FooterTab style={{backgroundColor:"#FFF", justifyContent:"center"}}>
                 <TouchableOpacity style={styles.logoutBtn} onPress={logout}>

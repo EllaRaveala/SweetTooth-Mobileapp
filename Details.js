@@ -1,8 +1,7 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, Image, Text, Alert, TextInput} from 'react-native';
+import React, {useEffect} from 'react';
+import {StyleSheet, Image, Text, Alert} from 'react-native';
 import {
     Container,
-    Content,
     Icon,
     Right,
     Card,
@@ -19,13 +18,14 @@ export default function Details({route, navigation}) {
 
     //Import params from Recipes - component
     const {data} = route.params;
+
     //set params to variables
     const name = data.name;
     const image = data.image;
     const duration = data.duration;
     const ingredients = data.ingredients;
     const likes = data.likes;
-    
+
     //Creates database table favouriteRecipes if not exist
     useEffect(() => {
         db.transaction(tx => {
@@ -43,8 +43,8 @@ export default function Details({route, navigation}) {
         }, null)
     }
 
-    // returns one card item with all the information in it lets user add the recipe
-    // to favourites
+    // returns one card item with all the information in it
+    // lets user add the recipe to favourites
     return (
         <Container style={styles.container}>
             <Text

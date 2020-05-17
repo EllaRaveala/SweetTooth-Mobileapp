@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, Image, ActivityIndicator, Button} from 'react-native';
+import {StyleSheet, Text, Image, ActivityIndicator} from 'react-native';
 import {Container} from 'native-base';
 
 export default function Welcome({route, navigation}) {
@@ -10,8 +10,8 @@ export default function Welcome({route, navigation}) {
     const [isImageLoading,
         setImageLoadStatus] = useState(false);
 
-    // returns facebook profile photo and facebook user name navigation button to
-    // Recipes page
+    // returns facebook profile photo and facebook user name 
+    //navigation button to Recipes page
     return (
         <Container style={styles.container}>
             <Text
